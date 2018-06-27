@@ -15,6 +15,7 @@ import numpy as np
 import platform
 import signal
 import sys
+import math
 
 from PIL import Image
 from glob import glob
@@ -46,6 +47,9 @@ class LF2Environment():
         for folder in FOLDERS:
             if not exists(folder):
                 mkdir(folder)
+
+        self.agent = characters[0]
+        self.opponent = characters[1]
 
         self.path = path
         self.url = 'http://' + ip + ':' + str(port)
@@ -383,6 +387,7 @@ class LF2Environment():
 
         new_gameID = self.get_gameID()
         load_count = 0
+        feature = []
         while new_gameID is None or new_gameID == 'None' or new_gameID == 'not_assign' or new_gameID == self.gameID:
             print('reset(): Not refresh yet! new_gameID is %s. So sleep for %d seconds.' % (new_gameID, SLEEP_DURATION))
             sleep(SLEEP_DURATION)
@@ -393,10 +398,24 @@ class LF2Environment():
                 return self.reset()
         self.log = self.get_log()
         self.gameID = new_gameID
+        try:
+            content = json.loads(self.log)
+            for idx, character in enumerate(content):
+                feature.append(character['health']['hp'])
+                feature.append(character['health']['mp'])
+                for key, value in character['ps'].items():
+                    if value == 'right':
+                        value = 0
+                    elif value == 'left':
+                        value = 1
+                    feature.append(value)
+        except ValueError as error:
+                print('JSON Error: %s. Log: %s. Saved log: %s.' % (error, log, self.get_saved_log()))
+                self.debug('error')
         print('reset(): after reset, gameID: %s, log: %s.' % (self.gameID, self.log))
 
         observation = self.get_observation()
-        return observation
+        return observation, feature
 
     def step_action(self, action, pause=True):
         if self.allDirections(action):
@@ -413,6 +432,8 @@ class LF2Environment():
     def step_log(self):
         reward, done, info = 0, False, False
         reward_hp = reward_mp = 0
+        distance = 100000
+        feature = []
 
         log = self.get_log()
         self.log = log
@@ -429,26 +450,49 @@ class LF2Environment():
             done = True
             print('step(): log == "gameover"')
             info = True
+            feature = [0] * 28
         else:
             self.log_not_found_count = 0
             done = False
             try:
                 content = json.loads(log)
+                # print(type(content))
+                coordiante = []
                 for idx, character in enumerate(content):
                     name = character['name']
+                    # print(type(character['ps']))
+                    # print(character['ps'])
+                    coordiante.append(character['ps']['x'])
+                    coordiante.append(character['ps']['y'])
+                    coordiante.append(character['ps']['z'])
+                    feature.append(character['health']['hp'])
+                    feature.append(character['health']['mp'])
+                    for key, value in character['ps'].items():
+                        if value == 'right':
+                            value = 0
+                        elif value == 'left':
+                            value = 1
+                        feature.append(value)
                     if 'hp' in self.rewardList and self.hps[idx] != NOTSET:
                         reward_hp += (self.hps[idx] - character['health']['hp']) * REWARD_HP_FACTOR[idx]
                     self.hps[idx] = character['health']['hp']
                     if 'mp' in self.rewardList and self.mps[idx] != NOTSET:
                         reward_mp += (self.mps[idx] - character['health']['mp']) * REWARD_MP_FACTOR[idx]
                     self.mps[idx] = character['health']['mp']
+                x_distance = math.fabs(coordiante[0] - coordiante[3])
+                y_distance = math.fabs(coordiante[1] - coordiante[4])
+                z_distance = math.fabs(coordiante[2] - coordiante[5])
+                distance = math.sqrt(math.pow(x_distance, 2) + math.pow(y_distance, 2) + math.pow(z_distance, 2))
+                coordiante.clear()
+                # print(distance)
                 info = True
             except ValueError as error:
                 print('JSON Error: %s. Log: %s. Saved log: %s.' % (error, log, self.get_saved_log()))
                 self.debug('error')
 
         reward = reward_hp / 40.0 + reward_mp / 400 # clips reward
-        return reward, done, info
+        
+        return reward, done, info, feature
 
     def step_obsv(self):
         observation = self.get_observation()

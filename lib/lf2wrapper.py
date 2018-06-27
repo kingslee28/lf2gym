@@ -66,27 +66,28 @@ class LF2SkipNWrapper():
         self.curr_action = None
 
     def step(self, *skip4_action):
-        observation, reward, done, info = None, 0, False, True
+        observation, reward, done, info, character_info = None, 0, False, True, []
         actions = [self.action_space.get(skip4) for skip4 in skip4_action]
         for action in zip(*actions):
-            o, r, d, i = self.env.step(*action)
+            o, r, d, i, c = self.env.step(*action)
             observation = o
             reward += r
             done = done or d
             info = info and i
+            character_info = c
         self.frames.append(observation)
         self.prev_action = self.curr_action
         self.curr_action = skip4_action
-        return self.observe(), reward, done, info
+        return self.observe(), reward, done, info, character_info
 
     def render(self):
         self.env.render(self.action_info() if self.debugMode else None)
         
     def reset(self, options=None):
-        observation = self.env.reset(options)
+        observation, feature = self.env.reset(options)
         for _ in range(self.mem_len):
             self.frames.append(observation)
-        return self.observe()
+        return self.observe(), feature
 
     def observe(self):
         return np.stack(self.frames, axis=2)
