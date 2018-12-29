@@ -31,7 +31,7 @@ while not done:
     # Sample a random action
     action = env.action_space.sample()
     # Take the chosen action
-    _, reward, done, _ = env.step(action)
+    _, reward, done, _, _ = env.step(action)
     print('Enemy took action %d.' % action)
     sleep(args.interval)
 # Game ends

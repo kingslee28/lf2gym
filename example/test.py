@@ -24,7 +24,7 @@ sys.path.append(os.path.abspath('..'))
 # Import lf2gym
 import lf2gym
 # Make an env
-env = lf2gym.make(startServer=True, wrap='skip4', driverType=lf2gym.WebDriver.PhantomJS, 
+env = lf2gym.make(startServer=True, wrap='skip4', driverType=lf2gym.WebDriver.Chrome,
     characters=[lf2gym.Character[AGENT], lf2gym.Character[OPPOENENT]], 
     difficulty=lf2gym.Difficulty.Dumbass, debug=True)
 
