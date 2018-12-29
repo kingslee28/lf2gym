@@ -32,6 +32,7 @@ copy    $FROM/character.js        F.LF/LF/character.js
 copy    $FROM/match.js            F.LF/LF/match.js
 copy    $FROM/weapon.js           F.LF/LF/weapon.js
 copy    $FROM/background.js       F.LF/LF/background.js
+copy    $FROM/manager.js          F.LF/LF/manager.js
 copy    $FROM/back3.png           F.LF/LF2_19/bg/hkc/back3.png
 copy    $FROM/message_overlay.png F.LF/LF2_19/UI/message_overlay.png
 copy    $FROM/bg.js               F.LF/LF2_19/bg/hkc/bg.js
