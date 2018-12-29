@@ -66,7 +66,8 @@ class LF2Environment():
 
         self.action_space = config.ActionSpace(1)
         self.action_space_2 = config.ActionSpace(2)
-        self.observation_space = config.ObservationSpace((160, 380))
+        # self.observation_space = config.ObservationSpace((160, 380))
+        self.observation_space = config.ObservationSpace((80, 190))
 
         self.dir_keys = {'w': False, 'd': False, 'x': False, 'a': False}
         self.dir_keys_2 = {Keys.ARROW_UP: False, Keys.ARROW_DOWN: False, 
@@ -324,12 +325,14 @@ class LF2Environment():
     def get_cropped_screenshot(self):
         i = self.get_screenshot()
         if self.driverType == config.WebDriver.PhantomJS:
-            i = i[80:240, 10:390, :] # 160x380x3
+            # i = i[80:240, 10:390, :] # 160x380x3
+            i = i[80:160, 10:200, :] # 80x190x3
         else:
             if self.canvasSize != i.shape[0:2]:
                 print('Warning: the screenshot size is (%d, %d) rather than (%d, %d).' % (i.shape[0], i.shape[1], self.canvasSize[0], self.canvasSize[1]))
             i = self.crop(i)
-            i = imresize(i, (160, 380), interp='bilinear')
+            # i = imresize(i, (160, 380), interp='bilinear')
+            i = imresize(i, (80, 190), interp='bilinear')
         return i
         
     def get_observation(self):
@@ -514,8 +517,10 @@ class LF2Environment():
 
     def debug(self, name):
         self.render_save('%s_orig.png' % name, 'orig', (400, 300), 'debug')
-        self.render_save('%s_crop.png' % name, 'crop', (380, 160), 'debug')
-        self.render_save('%s_obsv.png' % name, 'obsv', (380, 160), 'debug')
+        # self.render_save('%s_crop.png' % name, 'crop', (380, 160), 'debug')
+        self.render_save('%s_crop.png' % name, 'crop', (190, 80), 'debug')
+        # self.render_save('%s_obsv.png' % name, 'obsv', (380, 160), 'debug')
+        self.render_save('%s_obsv.png' % name, 'obsv', (190, 80), 'debug')
         with open('debug/%s.log' % name, 'w') as f:
             f.write(json.dumps(self.get_saved_log()))
 
