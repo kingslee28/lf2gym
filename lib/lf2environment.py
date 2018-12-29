@@ -31,8 +31,8 @@ SLEEP_DURATION = 2
 NOTSET = -1e4
 REWARD_HP_FACTOR = [] # {'Firen': -1, 'Freeze': +1}
 REWARD_MP_FACTOR = [] # {'Firen': -1, 'Freeze': 0}
-OPPOSITE_KEYS = {'w': 'x', 'x': 'w', 'd': 'a', 'a': 'd', 
-    Keys.ARROW_UP: Keys.ARROW_DOWN, Keys.ARROW_DOWN: Keys.ARROW_UP, 
+OPPOSITE_KEYS = {'w': 'x', 'x': 'w', 'd': 'a', 'a': 'd',
+    Keys.ARROW_UP: Keys.ARROW_DOWN, Keys.ARROW_DOWN: Keys.ARROW_UP,
     Keys.ARROW_LEFT: Keys.ARROW_RIGHT, Keys.ARROW_RIGHT: Keys.ARROW_LEFT}
 FOLDERS = ['screenshot', 'debug']
 RESET_PATIENCE = 10
@@ -70,7 +70,7 @@ class LF2Environment():
         self.observation_space = config.ObservationSpace((80, 190))
 
         self.dir_keys = {'w': False, 'd': False, 'x': False, 'a': False}
-        self.dir_keys_2 = {Keys.ARROW_UP: False, Keys.ARROW_DOWN: False, 
+        self.dir_keys_2 = {Keys.ARROW_UP: False, Keys.ARROW_DOWN: False,
                            Keys.ARROW_LEFT: False, Keys.ARROW_RIGHT: False}
         self.log = {}
         self.recording = False
@@ -334,29 +334,29 @@ class LF2Environment():
             # i = imresize(i, (160, 380), interp='bilinear')
             i = imresize(i, (80, 190), interp='bilinear')
         return i
-        
+
     def get_observation(self):
         return rgb2gray(self.get_cropped_screenshot())
-    
+
     def get_log(self):
         return self.driver.execute_script('return window.my_msg;')
         # return self.driver.get_log('browser')
-        
+
     def get_gameID(self):
         return self.driver.execute_script('return window.gameID;')
-    
+
     def get_framecount(self):
         return self.driver.execute_script('return window.framecount;')
-    
+
     def set_ai_epsilon(self, ai_epsilon):
         return self.driver.execute_script('window.epsilon = ' + str(ai_epsilon) + ';')
-    
+
     def set_hp_full(self, value):
         return self.driver.execute_script('GC.default.health.hp_full = ' + str(value) + ';')
-    
+
     def set_mp_full(self, value):
         return self.driver.execute_script('GC.default.health.mp_full = ' + str(value) + ';')
-    
+
     def set_mp_start(self, value):
         print()
         return self.driver.execute_script('GC.default.health.mp_start = ' + str(value) + ';')
@@ -491,10 +491,14 @@ class LF2Environment():
                             value = 1
                         feature.append(value)
                     if 'hp' in self.rewardList and self.hps[idx] != NOTSET:
-                        reward_hp += (self.hps[idx] - character['health']['hp']) * REWARD_HP_FACTOR[idx]
+                        dhp = self.hps[idx] - character['health']['hp']
+                        dhp = 0 if dhp < 0 else dhp  # no reward for hp auto-generate
+                        reward_hp += dhp * REWARD_HP_FACTOR[idx]
                     self.hps[idx] = character['health']['hp']
                     if 'mp' in self.rewardList and self.mps[idx] != NOTSET:
-                        reward_mp += (self.mps[idx] - character['health']['mp']) * REWARD_MP_FACTOR[idx]
+                        dmp = self.mps[idx] - character['health']['mp']  # no reward for mp auto-generate
+                        dmp = 0 if dmp < 0 else dmp
+                        reward_mp += dmp * REWARD_MP_FACTOR[idx]
                     self.mps[idx] = character['health']['mp']
                 x_distance = coordiante[0] - coordiante[3]
                 y_distance = coordiante[1] - coordiante[4]
@@ -512,7 +516,7 @@ class LF2Environment():
                 self.debug('error')
 
         reward = reward_hp / 40.0 + reward_mp / 400 # clips reward
-        
+
         return reward, done, info, feature
 
     def step_obsv(self):
