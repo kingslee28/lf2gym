@@ -403,7 +403,11 @@ class LF2Environment():
         self.gameID = new_gameID
         try:
             content = json.loads(self.log)
+            coordiante = []
             for idx, character in enumerate(content):
+                coordiante.append(character['ps']['x'])
+                coordiante.append(character['ps']['y'])
+                coordiante.append(character['ps']['z'])
                 feature.append(character['health']['hp'])
                 feature.append(character['health']['mp'])
                 for key, value in character['ps'].items():
@@ -412,6 +416,15 @@ class LF2Environment():
                     elif value == 'left':
                         value = 1
                     feature.append(value)
+            x_distance = coordiante[0] - coordiante[3]
+            y_distance = coordiante[1] - coordiante[4]
+            z_distance = coordiante[2] - coordiante[5]
+            distance = math.sqrt(math.pow(x_distance, 2) + math.pow(y_distance, 2) + math.pow(z_distance, 2))
+            feature.append(x_distance)
+            feature.append(y_distance)
+            feature.append(z_distance)
+            feature.append(distance)
+            coordiante.clear()
         except ValueError as error:
                 print('JSON Error: %s. Log: %s. Saved log: %s.' % (error, log, self.get_saved_log()))
                 self.debug('error')
@@ -453,7 +466,8 @@ class LF2Environment():
             done = True
             print('step(): log == "gameover"')
             info = True
-            feature = [0] * 28
+            # feature = [0] * 28
+            feature = [0] * 32
         else:
             self.log_not_found_count = 0
             done = False
@@ -482,10 +496,14 @@ class LF2Environment():
                     if 'mp' in self.rewardList and self.mps[idx] != NOTSET:
                         reward_mp += (self.mps[idx] - character['health']['mp']) * REWARD_MP_FACTOR[idx]
                     self.mps[idx] = character['health']['mp']
-                x_distance = math.fabs(coordiante[0] - coordiante[3])
-                y_distance = math.fabs(coordiante[1] - coordiante[4])
-                z_distance = math.fabs(coordiante[2] - coordiante[5])
+                x_distance = coordiante[0] - coordiante[3]
+                y_distance = coordiante[1] - coordiante[4]
+                z_distance = coordiante[2] - coordiante[5]
                 distance = math.sqrt(math.pow(x_distance, 2) + math.pow(y_distance, 2) + math.pow(z_distance, 2))
+                feature.append(x_distance)
+                feature.append(y_distance)
+                feature.append(z_distance)
+                feature.append(distance)
                 coordiante.clear()
                 # print(distance)
                 info = True
