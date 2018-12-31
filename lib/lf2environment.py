@@ -428,7 +428,7 @@ class LF2Environment():
         except ValueError as error:
                 print('JSON Error: %s. Log: %s. Saved log: %s.' % (error, log, self.get_saved_log()))
                 self.debug('error')
-        print('reset(): after reset, gameID: %s, log: %s.' % (self.gameID, self.log))
+        # print('reset(): after reset, gameID: %s, log: %s.' % (self.gameID, self.log))
 
         observation = self.get_observation()
         return observation, feature
@@ -464,7 +464,7 @@ class LF2Environment():
         elif log == 'gameover':
             self.log_not_found_count = 0
             done = True
-            print('step(): log == "gameover"')
+            # print('step(): log == "gameover"')
             info = True
             # feature = [0] * 28
             feature = [0] * 32
@@ -493,6 +493,8 @@ class LF2Environment():
                     if 'hp' in self.rewardList and self.hps[idx] != NOTSET:
                         dhp = self.hps[idx] - character['health']['hp']
                         dhp = 0 if dhp < 0 else dhp  # no reward for hp auto-generate
+                        if REWARD_HP_FACTOR[idx] == 1:
+                            dhp = dhp * 2
                         reward_hp += dhp * REWARD_HP_FACTOR[idx]
                     self.hps[idx] = character['health']['hp']
                     if 'mp' in self.rewardList and self.mps[idx] != NOTSET:

@@ -39,7 +39,7 @@ print('Custom reset options: %s' % options)
 env.reset(options)
 
 # Start to record the screen
-env.start_recording()
+# env.start_recording()
 
 # Skip 200 steps (i.e. 800 frames in skip-4 wrapping)
 env.idle(200)
@@ -50,10 +50,10 @@ for act in ACTIONS:
     # Take an action
     env.step(act)
     # Render the screen
-    env.render()
+    # env.render()
     # Print out the current and the previous actions as well as the time duration
     tick(env.action_info())
 
 # Stop recording and save to a file
-env.stop_recording()
-env.save_recording('test.avi')
+# env.stop_recording()
+# env.save_recording('test.avi')
