@@ -37,6 +37,10 @@ OPPOSITE_KEYS = {'w': 'x', 'x': 'w', 'd': 'a', 'a': 'd',
 FOLDERS = ['screenshot', 'debug']
 RESET_PATIENCE = 10
 LOG_NOT_FOUND_PATIENCE = 40
+# obs_n = [160, 380]
+obs_n = [80, 190]
+# feature_n = 28
+feature_n = 32
 
 class LF2Environment():
     def __init__(self, path, ip, port, driverType, characters, difficulty, background, versusPlayer, duel, rewardList, localDriver, canvasSize, debug):
@@ -66,8 +70,7 @@ class LF2Environment():
 
         self.action_space = config.ActionSpace(1)
         self.action_space_2 = config.ActionSpace(2)
-        # self.observation_space = config.ObservationSpace((160, 380))
-        self.observation_space = config.ObservationSpace((80, 190))
+        self.observation_space = config.ObservationSpace((obs_n[0], obs_n[1]))
 
         self.dir_keys = {'w': False, 'd': False, 'x': False, 'a': False}
         self.dir_keys_2 = {Keys.ARROW_UP: False, Keys.ARROW_DOWN: False,
@@ -325,14 +328,12 @@ class LF2Environment():
     def get_cropped_screenshot(self):
         i = self.get_screenshot()
         if self.driverType == config.WebDriver.PhantomJS:
-            # i = i[80:240, 10:390, :] # 160x380x3
-            i = i[80:160, 10:200, :] # 80x190x3
+            i = i[80:80+obs_n[0], 10:10+obs_n[1], :] # 80x190x3
         else:
             if self.canvasSize != i.shape[0:2]:
                 print('Warning: the screenshot size is (%d, %d) rather than (%d, %d).' % (i.shape[0], i.shape[1], self.canvasSize[0], self.canvasSize[1]))
             i = self.crop(i)
-            # i = imresize(i, (160, 380), interp='bilinear')
-            i = imresize(i, (80, 190), interp='bilinear')
+            i = imresize(i, (obs_n[0], obs_n[1]), interp='bilinear')
         return i
 
     def get_observation(self):
@@ -420,10 +421,11 @@ class LF2Environment():
             y_distance = coordiante[1] - coordiante[4]
             z_distance = coordiante[2] - coordiante[5]
             distance = math.sqrt(math.pow(x_distance, 2) + math.pow(y_distance, 2) + math.pow(z_distance, 2))
-            feature.append(x_distance)
-            feature.append(y_distance)
-            feature.append(z_distance)
-            feature.append(distance)
+            if feature_n == 32:
+                feature.append(x_distance)
+                feature.append(y_distance)
+                feature.append(z_distance)
+                feature.append(distance)
             coordiante.clear()
         except ValueError as error:
                 print('JSON Error: %s. Log: %s. Saved log: %s.' % (error, log, self.get_saved_log()))
@@ -466,8 +468,7 @@ class LF2Environment():
             done = True
             # print('step(): log == "gameover"')
             info = True
-            # feature = [0] * 28
-            feature = [0] * 32
+            feature = [0] * feature_n
         else:
             self.log_not_found_count = 0
             done = False
@@ -506,10 +507,11 @@ class LF2Environment():
                 y_distance = coordiante[1] - coordiante[4]
                 z_distance = coordiante[2] - coordiante[5]
                 distance = math.sqrt(math.pow(x_distance, 2) + math.pow(y_distance, 2) + math.pow(z_distance, 2))
-                feature.append(x_distance)
-                feature.append(y_distance)
-                feature.append(z_distance)
-                feature.append(distance)
+                if feature_n == 32:
+                    feature.append(x_distance)
+                    feature.append(y_distance)
+                    feature.append(z_distance)
+                    feature.append(distance)
                 coordiante.clear()
                 # print(distance)
                 info = True
@@ -541,10 +543,8 @@ class LF2Environment():
 
     def debug(self, name):
         self.render_save('%s_orig.png' % name, 'orig', (400, 300), 'debug')
-        # self.render_save('%s_crop.png' % name, 'crop', (380, 160), 'debug')
-        self.render_save('%s_crop.png' % name, 'crop', (190, 80), 'debug')
-        # self.render_save('%s_obsv.png' % name, 'obsv', (380, 160), 'debug')
-        self.render_save('%s_obsv.png' % name, 'obsv', (190, 80), 'debug')
+        self.render_save('%s_crop.png' % name, 'crop', (obs_n[1], obs_n[0]), 'debug')
+        self.render_save('%s_obsv.png' % name, 'obsv', (obs_n[1], obs_n[0]), 'debug')
         with open('debug/%s.log' % name, 'w') as f:
             f.write(json.dumps(self.get_saved_log()))
 
